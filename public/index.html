@@ -11,6 +11,16 @@
   </title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <script nomodule src="https://unpkg.com/@google/model-viewer/dist/model-viewer-legacy.js"></script>
+  <script>
+    window.addEventListener('load', function () {
+      var canvas = document.createElement('canvas');
+      var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (!gl) {
+        console.error('WebGL not supported');
+        alert('您的浏览器不支持 WebGL，可能无法显示 3D 模型');
+      }
+    });
+  </script>
 </head>
 
 <body>

@@ -34,27 +34,45 @@
           <p>{{ modelError }}</p>
           <el-button type="primary" @click="retryLoadModel">重试</el-button>
         </div>
-        <!-- 测试用的简单模型显示 -->
-        <model-viewer
-          v-show="!loading && !modelError"
-          ref="modelViewer"
-          src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
-          camera-controls
-          auto-rotate
-          style="width: 100%; height: 80vh; background: #f0f0f0;"
-          @load="onModelLoad"
-          @error="onModelError"
-          @progress="onProgress"
-        ></model-viewer>
+        <div v-show="!loading && !modelError" class="model-viewer-container">
+          <model-viewer
+            ref="modelViewer"
+            :src="selectedRoom.modelUrl"
+            alt="3D模型"
+            camera-controls
+            auto-rotate
+            shadow-intensity="1"
+            exposure="1"
+            style="width: 100%; height: 80vh; background: #f0f0f0;"
+            @load="onModelLoad"
+            @error="onModelError"
+            @progress="onProgress"
+            interaction-prompt="auto"
+            interaction-prompt-style="basic"
+            loading="eager"
+            reveal="auto"
+            ar
+            ar-modes="webxr scene-viewer quick-look"
+          >
+            <div class="progress" slot="progress-bar">
+              <el-progress :percentage="loadingProgress"></el-progress>
+            </div>
+            <div slot="poster" class="poster">
+              <img :src="selectedRoom.imageUrl" alt="模型预览图" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+          </model-viewer>
+        </div>
       </div>
     </el-dialog>
 
     <!-- 调试信息 -->
-    <div v-if="debug" style="position: fixed; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 10px; font-family: monospace; font-size: 12px;">
-      <p>Model Viewer Ready: {{ modelViewerReady }}</p>
-      <p>Loading: {{ loading }}</p>
-      <p>Progress: {{ loadingProgress }}%</p>
-      <p>Error: {{ modelError }}</p>
+    <div v-if="debug" class="debug-info">
+      <h3>调试信息</h3>
+      <p>Model Viewer 状态: {{ modelViewerReady ? '已加载' : '未加载' }}</p>
+      <p>当前模型: {{ selectedRoom ? selectedRoom.modelUrl : '无' }}</p>
+      <p>加载状态: {{ loading ? '加载中' : '已完成' }}</p>
+      <p>加载进度: {{ loadingProgress }}%</p>
+      <p>错误信息: {{ modelError || '无' }}</p>
     </div>
   </div>
 </template>
@@ -79,7 +97,7 @@ export default {
           imageUrl: require('@/assets/c1.jpg'),
           capacity: 30,
           description: '配备完整多媒体设备，适合大型会议和演讲',
-          modelUrl: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb'
+          modelUrl: window.location.origin + '/models/large-room.glb'  // 使用完整的URL路径
         }
       ]
     }
@@ -102,6 +120,19 @@ export default {
     },
     view3DModel(room) {
       console.log('Opening 3D model for:', room.name);
+      console.log('Model URL:', room.modelUrl);
+      // 验证模型URL是否正确
+      fetch(room.modelUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          console.log('Model file is accessible');
+        })
+        .catch(error => {
+          console.error('Model file access error:', error);
+          this.modelError = `模型文件访问失败: ${error.message}`;
+        });
       this.selectedRoom = room;
       this.dialogVisible = true;
       this.loading = true;
@@ -117,7 +148,20 @@ export default {
           // 强制重新加载模型
           viewer.src = '';
           setTimeout(() => {
+            console.log('Loading model:', this.selectedRoom.modelUrl);
             viewer.src = this.selectedRoom.modelUrl;
+            
+            // 监听模型加载过程中的错误
+            viewer.addEventListener('error', (error) => {
+              console.error('Model viewer error:', error);
+              this.modelError = `模型加载错误: ${error.detail}`;
+            });
+            
+            // 监听模型加载状态
+            viewer.addEventListener('load', () => {
+              console.log('Model loaded into viewer');
+              this.loading = false;
+            });
           }, 100);
         } else {
           console.error('Model viewer element not found');
@@ -175,6 +219,7 @@ export default {
 <style scoped>
 .virtual-scene-container {
   padding: 20px;
+  position: relative;
 }
 
 .room-card {
@@ -208,13 +253,10 @@ export default {
 }
 
 .model-container {
+  position: relative;
   width: 100%;
   height: 80vh;
   background: #f5f7fa;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
 }
 
 .loading-overlay,
@@ -232,30 +274,22 @@ export default {
   z-index: 1;
 }
 
-.loading-overlay i,
-.error-overlay i {
-  font-size: 32px;
-  margin-bottom: 10px;
+.model-viewer-container {
+  width: 100%;
+  height: 100%;
 }
 
-.error-overlay {
-  color: #F56C6C;
-}
-
-.error-overlay .el-button {
-  margin-top: 20px;
-}
-
-.controls {
-  position: absolute;
+.debug-info {
+  position: fixed;
   bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 10px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 15px;
   border-radius: 4px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  font-family: monospace;
+  font-size: 12px;
+  z-index: 1000;
 }
 
 /* 自定义 model-viewer 样式 */
@@ -263,6 +297,7 @@ model-viewer {
   width: 100%;
   height: 100%;
   background-color: #f5f7fa;
+  --poster-color: transparent;
 }
 
 /* 添加一些控制按钮的样式 */
