@@ -39,7 +39,6 @@
               </template>
               <router-link to="/main/booking-room" tag="el-menu-item" index="2-1">预约会议室</router-link>
               <router-link to="/main/inquiry-meeting-room" tag="el-menu-item" index="2-2">查询预约</router-link>
-              <router-link to="/main/virtual-scene" tag="el-menu-item" index="2-3">虚拟会议室</router-link>
             </el-submenu>
 
             <!-- 数据分析模块 -->

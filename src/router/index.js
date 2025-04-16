@@ -12,10 +12,7 @@ const routes = [
     name: 'login',
     component: Login,
   },
-  {
-    path: '/',
-    redirect: '/login'
-  },
+
   {
     path: '/device-control',
     name: 'DeviceControl',
@@ -54,6 +51,7 @@ const routes = [
         path: 'inquiry-meeting-room',
         name: 'InquiryMeetingRoom',
         component: () => import(/* webpackChunkName: "inquiry-meeting-room" */ '../views/InquiryMeetingRoom.vue'),
+        meta: { requiresAuth: true }
       },
       {
         path: 'booking-room',
@@ -74,6 +72,7 @@ const routes = [
         path: 'data-analysis',
         name: 'DataAnalysis',
         component: () => import(/* webpackChunkName: "data-analysis" */ '../views/DataAnalysis.vue'),
+        meta: { requiresAuth: true }
       }
     ],
   },

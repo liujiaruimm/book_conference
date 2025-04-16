@@ -60,14 +60,7 @@
       </div>
     </el-dialog>
 
-    <!-- 调试信息 -->
-    <div v-if="debug" class="debug-info">
-      <h3>调试信息</h3>
-      <p>Model Viewer 状态: {{ modelViewerReady ? '已加载' : '未加载' }}</p>
-      <p>当前模型: {{ selectedRoom ? selectedRoom.modelUrl : '无' }}</p>
-      <p>加载状态: {{ loading ? '加载中' : '已完成' }}</p>
-      <p>错误信息: {{ modelError || '无' }}</p>
-    </div>
+
   </div>
 </template>
 
