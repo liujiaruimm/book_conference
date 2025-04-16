@@ -5,7 +5,7 @@
       <div class="hero-content">
         <h1>智能会议室</h1>
         <p>让每一次会议都高效、舒适、无忧</p>
-        <el-button type="primary" size="large" @click="$router.push('/booking')">立即预订</el-button>
+        <el-button type="primary" size="large" @click="$router.push('/main/booking-room')">立即预订</el-button>
       </div>
     </div>
 
@@ -143,7 +143,7 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(63, 62, 62, 0.5);
 }
 
 .hero-content {

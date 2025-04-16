@@ -76,38 +76,15 @@
         required: true
         }
         },
-    dialogVisible: false,
     data() {
       return {
-        tableData: [
-          {
-            roomName: '会议室一',
-            location: '101',
-            capacity: 20
-          },
-          {
-            roomName: '会议室二',
-            location: '102',
-            capacity: 15
-          },
-          {
-            roomName: '会议室三',
-            location: '103',
-            capacity: 30
-          },
-          {
-            roomName: '会议室四',
-            location: '104',
-            capacity: 10
-          }
-        ],
         dialogVisible: false,
-      editForm: {
-        roomName: '',
-        location: '',
-        capacity: ''
-      },
-      editIndex: -1 // 用于保存编辑的索引
+        editForm: {
+          roomName: '',
+          location: '',
+          capacity: ''
+        },
+        editIndex: -1 // 用于保存编辑的索引
       }
     },
     methods: {
@@ -119,10 +96,15 @@
       this.dialogVisible = true;
     },
     handleSave() {
-      // 保存编辑后的数据
-      this.tableData[this.editIndex].roomName = this.editForm.roomName;
-      this.tableData[this.editIndex].location = this.editForm.location;
-      this.tableData[this.editIndex].capacity = this.editForm.capacity;
+      // 创建编辑后的数据对象
+      const updatedRow = {
+        roomName: this.editForm.roomName,
+        location: this.editForm.location,
+        capacity: this.editForm.capacity
+      };
+      
+      // 通过事件通知父组件更新数据
+      this.$emit('update-table', { index: this.editIndex, data: updatedRow });
 
       this.dialogVisible = false;
       this.$message({
@@ -139,8 +121,9 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          // 执行删除操作
-          this.tableData.splice(index, 1); // 从表格中删除会议室
+          // 通过事件通知父组件删除数据
+          this.$emit('delete-table', index);
+          
           this.$message({
             type: 'success',
             message: '删除成功!'

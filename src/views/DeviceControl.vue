@@ -1,7 +1,7 @@
 <template>
   <div class="device-control">
     <div class="header">
-      <el-button type="primary" icon="el-icon-back" @click="goBack" class="back-button">返回主页</el-button>
+      
     </div>
     <div class="iframe-container">
       <iframe 

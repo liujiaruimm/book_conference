@@ -26,9 +26,8 @@
                 <i class="el-icon-location"></i>
                 <span>会议室管理</span>
               </template>
-              <router-link to="/main/add-meeting-room" tag="el-menu-item" index="1-1">添加会议室</router-link>
-              <router-link to="/main/meeting-room-status" tag="el-menu-item" index="1-2">会议室状态</router-link>
-              <el-menu-item index="1-3" @click="openDeviceControl">设备控制</el-menu-item>
+              <router-link to="/main/meeting-room-status" tag="el-menu-item" index="1-1">会议室状态</router-link>
+              <el-menu-item index="1-2" @click="openDeviceControl">设备控制</el-menu-item>
             </el-submenu>
 
             <!-- 会议室预约模块 -->
@@ -121,6 +120,11 @@
     font-size: 20px;
     text-align: left;
     line-height: 60px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
   }
   .header-right {
     display: flex; /* 使头像和按钮在一行显示 */
@@ -137,12 +141,20 @@
     background-color: #fcfcfc;
     color: #333;
     text-align: center;
-    line-height: 600px;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    bottom: 0;
+    z-index: 900;
+    box-shadow: 2px 0 6px rgba(0,21,41,.35);
+    overflow-y: auto;
   }
   .el-main {
     background-color: #ffffff;
     color: #333;
-    
+    margin-left: 200px;
+    margin-top: 60px;
+    min-height: calc(100vh - 60px);
   }
   .button{
     display: flex;
@@ -163,6 +175,84 @@
   }
   .el-container:nth-child(7) .el-aside {
     line-height: 320px;
+  }
+  /* 美化滚动条 */
+  .el-aside::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .el-aside::-webkit-scrollbar-thumb {
+    background: #c0c4cc;
+    border-radius: 3px;
+  }
+  
+  .el-aside::-webkit-scrollbar-track {
+    background: #f5f7fa;
+  }
+
+  /* 导航菜单样式优化 */
+  .el-menu {
+    border-right: none;
+  }
+
+  .el-menu-item, .el-submenu__title {
+    height: 60px !important;
+    line-height: 60px !important;
+    font-size: 16px;
+  }
+
+  .el-submenu .el-menu-item {
+    height: 50px !important;
+    line-height: 50px !important;
+    font-size: 14px;
+  }
+
+  .el-menu-item i, .el-submenu__title i {
+    font-size: 18px;
+    margin-right: 10px;
+  }
+
+  .el-menu-item:hover, .el-submenu__title:hover {
+    background-color: #ecf5ff !important;
+  }
+
+  .el-menu-item.is-active {
+    background-color: #409EFF !important;
+    color: #fff !important;
+  }
+
+  /* 子菜单样式 */
+  .el-submenu .el-menu {
+    background-color: #f8f9fa;
+  }
+
+  /* 增加菜单项之间的间距 */
+  .el-menu > .el-menu-item,
+  .el-menu > .el-submenu {
+    margin: 4px 0;
+  }
+
+  /* 修复内容区域的行高 */
+  .el-container {
+    min-height: 100vh;
+  }
+
+  /* 自定义菜单项样式 */
+  .custom-menu-item {
+    cursor: pointer;
+  }
+  
+  .custom-menu-item .el-menu-item {
+    padding-left: 54px !important;
+  }
+  
+  .custom-menu-item .el-menu-item:hover {
+    background-color: #ecf5ff !important;
+  }
+  
+  .custom-menu-item .el-menu-item.is-active {
+    background-color: transparent !important;
+    color: #303133 !important;
   }
   </style>
   

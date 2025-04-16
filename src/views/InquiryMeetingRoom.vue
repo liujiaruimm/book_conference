@@ -5,78 +5,91 @@
         <i class="el-icon-s-shop"></i>
       </span>
       <el-date-picker
-        v-model="value1"
+        v-model="selectedDate"
         type="date"
         placeholder="选择日期"
-        :picker-options="pickerOptions"
+        value-format="yyyy-MM-dd"
         style="margin-right: 10px;">
       </el-date-picker>
 
       <el-button type="primary" @click="handleSearch">查询</el-button>
     </div>
 
-    <Inquiry :query="queryResults" />
+    <el-table :data="bookings" style="width: 100%">
+      <el-table-column prop="roomName" label="会议室" width="180"></el-table-column>
+      <el-table-column prop="startTime" label="开始时间" width="180"></el-table-column>
+      <el-table-column prop="endTime" label="结束时间" width="180"></el-table-column>
+      <el-table-column label="操作">
+        <template slot-scope="scope">
+          <el-button size="mini" type="danger" @click="handleCancel(scope.row)">取消预约</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
   </div>
 </template>
 
 <script>
-import Inquiry from '@/components/Inquiry.vue';
-
 export default {
-  components: {
-    Inquiry
-  },
   data() {
     return {
-      pickerOptions: {},
-      value1: '', // 日期选择的模型
-      allData: [ // 模拟数据
-        {
-          timeSlot: '2025-01-10 09:00-10:00',
-          userName: 'my',
-          meetingRoom: '会议室一',
-          location: '101',
-          participants: 5
-        },
-        {
-          timeSlot: '2025-01-10 10:00-11:00',
-          userName: 'my',
-          meetingRoom: '会议室三',
-          location: '102',
-          participants: 3
-        },
-      
-      ],
-      queryResults: [] // 存储查询结果
+      selectedDate: '',
+      bookings: []
     };
   },
   mounted() {
-    this.queryResults = this.allData; // 初始化显示所有模拟数据
+    this.fetchBookings();
   },
   methods: {
-    handleSearch() {
-      // 输出实际选择的日期到控制台
-      console.log("实际查询的日期:", this.value1);
+    async fetchBookings() {
+      try {
+        const params = this.selectedDate ? { date: this.selectedDate } : {};
+        const response = await this.$http.get('/getMeetingRoomBookings', { params });
+        this.bookings = response.data.map(booking => ({
+          ...booking,
+          startTime: this.formatDateTime(booking.startTime),
+          endTime: this.formatDateTime(booking.endTime)
+        }));
+      } catch (error) {
+        this.$message.error('获取预约记录失败：' + (error.response?.data?.message || '网络错误'));
+      }
+    },
 
-      this.queryResults = this.allData.filter(item => {
-        const itemDateStr = item.timeSlot.split(' ')[0]; // 获取记录日期字符串
-        const itemDate = new Date(itemDateStr); // 将记录中的日期字符串转换为Date对象
-        const selectedDate = this.value1 ? new Date(this.value1) : null; // 直接转换选择的日期为Date对象
+    formatDateTime(dateTimeStr) {
+      const date = new Date(dateTimeStr);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    },
 
-        // 只比较日、月、年
-        const matchesDate = selectedDate ? 
-          (itemDate.getFullYear() === selectedDate.getFullYear() &&
-           itemDate.getMonth() === selectedDate.getMonth() &&
-           itemDate.getDate() === selectedDate.getDate()) 
-          : true; // 检查日期是否匹配
+    async handleSearch() {
+      await this.fetchBookings();
+    },
 
-        return matchesDate; // 返回符合条件的记录
-      });
+    async handleCancel(booking) {
+      try {
+        const confirmed = await this.$confirm('确认取消该预约?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        });
+
+        if (confirmed) {
+          // 这里需要后端提供取消预约的接口
+          const response = await this.$http.delete(`/api/meeting-rooms/booking/${booking.id}`);
+          if (response.data.success) {
+            this.$message.success('取消预约成功');
+            await this.fetchBookings();
+          } else {
+            this.$message.error('取消预约失败：' + response.data.message);
+          }
+        }
+      } catch (error) {
+        if (error !== 'cancel') {
+          this.$message.error('取消预约失败：' + (error.response?.data?.message || '网络错误'));
+        }
+      }
     }
   }
 }
 </script>
-
 
 <style>
 .block {

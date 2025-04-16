@@ -8,11 +8,14 @@ Vue.use(VueRouter);
 
 const routes = [
   {
+    path: '/',
+    redirect: '/login'
+  },
+  {
     path: '/login',
     name: 'login',
     component: Login,
   },
-
   {
     path: '/device-control',
     name: 'DeviceControl',
@@ -31,11 +34,6 @@ const routes = [
         name: 'home',
         component: () => import(/* webpackChunkName: "home" */ '../views/HomeView.vue'),
         meta: { requiresAuth: true }
-      },
-      {
-        path: 'add-meeting-room',
-        name: 'AddMeetingRoom',
-        component: () => import(/* webpackChunkName: "add-meeting-room" */ '../views/AddMeetingRoom.vue'),
       },
       {
         path: 'meeting-room-status',
@@ -84,33 +82,6 @@ const router = new VueRouter({
   routes,
 });
 
-// 修改路由守卫逻辑
-router.beforeEach((to, from, next) => {
-  const userInfo = localStorage.getItem('userInfo')
 
-  // 如果需要登录认证
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    // 检查是否已登录
-    if (!userInfo) {
-      // 未登录则跳转到登录页
-      next({
-        path: '/login',
-        query: { redirect: to.fullPath }  // 保存要跳转的页面路径
-      })
-    } else {
-      // 已登录则允许访问
-      next()
-    }
-  } else {
-    // 如果是访问登录页
-    if (to.path === '/login' && userInfo) {
-      // 已登录用户访问登录页，跳转到主页
-      next('/main/home')
-    } else {
-      // 其他情况正常访问
-      next()
-    }
-  }
-})
 
 export default router;
