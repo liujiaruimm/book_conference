@@ -72,42 +72,42 @@ export default {
       endTime: null,        // 结束时间
       meetingRooms: [
         {
-          imageUrl: require('../assets/c1.jpg'),  // 确保路径正确
+          imageUrl: require('../assets/images/c1.png'),  // 确保路径正确
           roomName: '会议室一',
           location: '101',
           capacity: 20,
           availableTime: '9:00 - 18:00'
         },
         {
-          imageUrl: require('../assets/c2.jpg'),  // 确保路径正确
+          imageUrl: require('../assets/images/c2.png'),  // 确保路径正确
           roomName: '会议室二',
           location: '102',
           capacity: 15,
           availableTime: '10:00 - 17:00'
         },
         {
-          imageUrl: require('../assets/c3.jpg'),  // 确保路径正确
+          imageUrl: require('../assets/images/c3.png'),  // 确保路径正确
           roomName: '会议室三',
           location: '103',
           capacity: 20,
           availableTime: '9:00 - 18:00'
         },
         {
-          imageUrl: require('../assets/c4.jpg'),  // 确保路径正确
+          imageUrl: require('../assets/images/c4.png'),  // 确保路径正确
           roomName: '会议室四',
           location: '104',
           capacity: 15, 
           availableTime: '10:00 - 17:00'
         },
         {
-          imageUrl: require('../assets/c5.jpg'),  // 确保路径正确
+          imageUrl: require('../assets/images/c5.png'),  // 确保路径正确
           roomName: '会议室五',
           location: '105',
           capacity: 20,
           availableTime: '9:00 - 18:00'
         },
         {
-          imageUrl: require('../assets/c6.jpg'),  // 确保路径正确
+          imageUrl: require('../assets/images/c7.png'),  // 确保路径正确
           roomName: '会议室六',
           location: '106',
           capacity: 15,

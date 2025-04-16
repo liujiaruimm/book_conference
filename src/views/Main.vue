@@ -28,9 +28,7 @@
               </template>
               <router-link to="/main/add-meeting-room" tag="el-menu-item" index="1-1">添加会议室</router-link>
               <router-link to="/main/meeting-room-status" tag="el-menu-item" index="1-2">会议室状态</router-link>
-              <router-link to="/main/user-management" tag="el-menu-item" index="1-3">用户管理</router-link>
-              <router-link to="/main/environment-monitor" tag="el-menu-item" index="1-4">环境监测</router-link>
-              <el-menu-item index="1-5" @click="openDeviceControl">设备控制</el-menu-item>
+              <el-menu-item index="1-3" @click="openDeviceControl">设备控制</el-menu-item>
             </el-submenu>
 
             <!-- 会议室预约模块 -->
@@ -42,6 +40,15 @@
               <router-link to="/main/booking-room" tag="el-menu-item" index="2-1">预约会议室</router-link>
               <router-link to="/main/inquiry-meeting-room" tag="el-menu-item" index="2-2">查询预约</router-link>
               <router-link to="/main/virtual-scene" tag="el-menu-item" index="2-3">虚拟会议室</router-link>
+            </el-submenu>
+
+            <!-- 数据分析模块 -->
+            <el-submenu index="3">
+              <template slot="title">
+                <i class="el-icon-data-line"></i>
+                <span>数据分析</span>
+              </template>
+              <router-link to="/main/data-analysis" tag="el-menu-item" index="3-1">数据可视化</router-link>
             </el-submenu>
   
           </el-menu>
@@ -90,8 +97,7 @@
         });
       },
       openDeviceControl() {
-        // 在新窗口打开设备控制页面
-        window.open('/main/device-control', '_blank');
+        window.open('/device-control', '_blank');
       }
     }
   }

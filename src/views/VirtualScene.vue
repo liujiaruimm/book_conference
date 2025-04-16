@@ -27,7 +27,6 @@
         <div v-if="loading" class="loading-overlay">
           <i class="el-icon-loading"></i>
           <p>模型加载中...</p>
-          <p v-if="loadingProgress > 0">加载进度: {{ loadingProgress }}%</p>
         </div>
         <div v-if="modelError" class="error-overlay">
           <i class="el-icon-warning"></i>
@@ -46,7 +45,6 @@
             style="width: 100%; height: 80vh; background: #f0f0f0;"
             @load="onModelLoad"
             @error="onModelError"
-            @progress="onProgress"
             interaction-prompt="auto"
             interaction-prompt-style="basic"
             loading="eager"
@@ -54,9 +52,6 @@
             ar
             ar-modes="webxr scene-viewer quick-look"
           >
-            <div class="progress" slot="progress-bar">
-              <el-progress :percentage="loadingProgress"></el-progress>
-            </div>
             <div slot="poster" class="poster">
               <img :src="selectedRoom.imageUrl" alt="模型预览图" style="width: 100%; height: 100%; object-fit: contain;">
             </div>
@@ -71,7 +66,6 @@
       <p>Model Viewer 状态: {{ modelViewerReady ? '已加载' : '未加载' }}</p>
       <p>当前模型: {{ selectedRoom ? selectedRoom.modelUrl : '无' }}</p>
       <p>加载状态: {{ loading ? '加载中' : '已完成' }}</p>
-      <p>加载进度: {{ loadingProgress }}%</p>
       <p>错误信息: {{ modelError || '无' }}</p>
     </div>
   </div>
@@ -88,7 +82,6 @@ export default {
       modelError: null,
       autoRotate: true,
       modelViewer: null,
-      loadingProgress: 0,
       modelViewerReady: false,
       debug: true, // 开启调试模式
       virtualRooms: [
@@ -97,7 +90,7 @@ export default {
           imageUrl: require('@/assets/c1.jpg'),
           capacity: 30,
           description: '配备完整多媒体设备，适合大型会议和演讲',
-          modelUrl: window.location.origin + '/models/large-room.glb'  // 使用完整的URL路径
+          modelUrl: window.location.origin + '/models/room1.glb'  // 使用完整的URL路径
         }
       ]
     }
@@ -137,7 +130,6 @@ export default {
       this.dialogVisible = true;
       this.loading = true;
       this.modelError = null;
-      this.loadingProgress = 0;
     },
     onDialogOpen() {
       console.log('Dialog opened');
@@ -174,13 +166,11 @@ export default {
       this.loading = false;
       this.selectedRoom = null;
       this.modelError = null;
-      this.loadingProgress = 0;
     },
     handleClose(done) {
       this.loading = false;
       this.selectedRoom = null;
       this.modelError = null;
-      this.loadingProgress = 0;
       done();
     },
     onModelLoad(event) {
@@ -195,15 +185,9 @@ export default {
       this.modelError = '3D模型加载失败，请检查模型文件是否正确';
       this.$message.error(this.modelError);
     },
-    onProgress(event) {
-      const progress = event.detail.totalProgress * 100;
-      console.log('Loading progress:', progress);
-      this.loadingProgress = Math.round(progress);
-    },
     retryLoadModel() {
       this.loading = true;
       this.modelError = null;
-      this.loadingProgress = 0;
       const viewer = this.$refs.modelViewer;
       if (viewer) {
         viewer.src = '';
