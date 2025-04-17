@@ -72,7 +72,7 @@ export default {
         formData.append('password', this.loginForm.password)
 
         try {
-          const response = await this.$http.post('/api/login', formData, {
+          const response = await this.$http.post('/login', formData, {
             headers: {
               'Content-Type': 'multipart/form-data'
             }

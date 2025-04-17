@@ -5,17 +5,19 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    userInfo: JSON.parse(localStorage.getItem('userInfo')) || null,
+    userInfo: null,
     userName: '',
-    token: localStorage.getItem('token') || ''
+    token: '',
+    isLoggedIn: false
   },
   getters: {
-    isLoggedIn: state => !!state.token,
+    isLoggedIn: state => state.isLoggedIn,
     userRole: state => state.userInfo ? state.userInfo.role : null
   },
   mutations: {
     setUserInfo(state, userInfo) {
       state.userInfo = userInfo;
+      state.isLoggedIn = true;
       localStorage.setItem('userInfo', JSON.stringify(userInfo));
     },
     setUserName(state, userName) {
@@ -29,15 +31,30 @@ export default new Vuex.Store({
       state.userInfo = null;
       state.userName = '';
       state.token = '';
+      state.isLoggedIn = false;
       localStorage.removeItem('userInfo');
       localStorage.removeItem('token');
+    },
+    initializeStore(state) {
+      // 从 localStorage 恢复状态
+      const userInfo = localStorage.getItem('userInfo');
+      if (userInfo) {
+        const parsedUserInfo = JSON.parse(userInfo);
+        state.userInfo = parsedUserInfo;
+        state.userName = parsedUserInfo.username;
+        state.token = parsedUserInfo.token;
+        state.isLoggedIn = true;
+      }
     }
   },
   actions: {
+    initializeApp({ commit }) {
+      commit('initializeStore');
+    },
     login({ commit }, userData) {
       commit('setUserInfo', userData);
-      commit('setUserName', userData.userName);
-      commit('setToken', userData.password); // 这里假设password字段作为token使用
+      commit('setUserName', userData.username);
+      commit('setToken', userData.token);
     },
     logout({ commit }) {
       commit('clearUserInfo');

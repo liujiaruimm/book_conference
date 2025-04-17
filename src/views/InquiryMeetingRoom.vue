@@ -17,8 +17,10 @@
 
     <el-table :data="bookings" style="width: 100%">
       <el-table-column prop="roomName" label="会议室" width="180"></el-table-column>
+      <el-table-column prop="userName" label="预订人" width="120"></el-table-column>
       <el-table-column prop="startTime" label="开始时间" width="180"></el-table-column>
       <el-table-column prop="endTime" label="结束时间" width="180"></el-table-column>
+      <el-table-column prop="participants" label="参与人数" width="100"></el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
           <el-button size="mini" type="danger" @click="handleCancel(scope.row)">取消预约</el-button>
@@ -42,19 +44,59 @@ export default {
   methods: {
     async fetchBookings() {
       try {
-        const params = this.selectedDate ? { date: this.selectedDate } : {};
-        const response = await this.$http.get('/getMeetingRoomBookings', { params });
-        this.bookings = response.data.map(booking => ({
-          ...booking,
-          startTime: this.formatDateTime(booking.startTime),
-          endTime: this.formatDateTime(booking.endTime)
-        }));
+        // 从localStorage获取用户信息
+        const userInfo = localStorage.getItem('userInfo');
+        if (!userInfo) {
+          this.$message.warning('请先登录');
+          this.$router.push('/login');
+          return;
+        }
+
+        // 构建请求参数
+        const params = new URLSearchParams();
+        if (this.selectedDate) {
+          params.append('date', this.selectedDate);
+        }
+
+        const response = await this.$http({
+          method: 'post',
+          url: '/getMeetingRoomBookings',
+          data: params,
+          headers: {
+            'Authorization': `Bearer ${JSON.parse(userInfo).token}`,
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        });
+
+        // 检查响应状态
+        if (response.data.status === 1) {
+          if (response.data.data && Array.isArray(response.data.data)) {
+            this.bookings = response.data.data.map(booking => ({
+              id: booking.rReservationId || '',
+              roomId: booking.roomId,
+              roomName: booking.roomName || '未知会议室',
+              userName: booking.userName || '未知用户',
+              startTime: this.formatDateTime(booking.startTime),
+              endTime: this.formatDateTime(booking.endTime),
+              participants: booking.participants || 0
+            }));
+          } else {
+            this.$message.warning('暂无预约记录');
+            this.bookings = [];
+          }
+        } else {
+          this.$message.error(response.data.msg || '获取预约记录失败');
+          this.bookings = [];
+        }
       } catch (error) {
+        console.error('获取预约记录失败:', error);
         this.$message.error('获取预约记录失败：' + (error.response?.data?.message || '网络错误'));
       }
     },
 
     formatDateTime(dateTimeStr) {
+      if (!dateTimeStr) return '';
+      // 处理后端返回的日期时间格式 "2025-04-16T15:00:00"
       const date = new Date(dateTimeStr);
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
     },
@@ -72,17 +114,26 @@ export default {
         });
 
         if (confirmed) {
-          // 这里需要后端提供取消预约的接口
-          const response = await this.$http.delete(`/api/meeting-rooms/booking/${booking.id}`);
-          if (response.data.success) {
+          const userInfo = localStorage.getItem('userInfo');
+          const response = await this.$http({
+            method: 'delete',
+            url: `/cancelBooking/${booking.id}`,
+            headers: {
+              'Authorization': `Bearer ${JSON.parse(userInfo).token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (response.data.status === 1) {
             this.$message.success('取消预约成功');
             await this.fetchBookings();
           } else {
-            this.$message.error('取消预约失败：' + response.data.message);
+            this.$message.error(response.data.msg || '取消预约失败');
           }
         }
       } catch (error) {
         if (error !== 'cancel') {
+          console.error('取消预约失败:', error);
           this.$message.error('取消预约失败：' + (error.response?.data?.message || '网络错误'));
         }
       }
