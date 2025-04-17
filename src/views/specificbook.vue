@@ -319,25 +319,81 @@ export default {
         type: 'success'
       })
     },
-    bookRoom() {
+    async bookRoom() {
       if (this.isOverCapacity) {
         this.$message.error(`参会人数超过会议室容量！`)
         return
       }
       
-      console.log('预约信息：', {
-        date: this.selectedDate,
-        startTime: this.startTime,
-        endTime: this.endTime,
-        attendees: this.attendees
-      })
-      
-      // 跳转到查询页面
-      this.$router.push('/main/inquiry-meeting-room')
-      this.$message({
-        type: 'success',
-        message: '预约成功！可查询你的预约记录'
-      })
+      try {
+        // 将选中的日期和时间合并成完整的日期时间字符串，并格式化为后端所需格式
+        const formatDateTime = (date, timeStr) => {
+          const [hours, minutes] = timeStr.split(':').map(Number)
+          const dateTime = new Date(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate(),
+            hours,
+            minutes
+          )
+          // 转换为 "yyyy-MM-ddTHH:mm:00" 格式
+          const year = dateTime.getFullYear()
+          const month = String(dateTime.getMonth() + 1).padStart(2, '0')
+          const day = String(dateTime.getDate()).padStart(2, '0')
+          const hour = String(hours).padStart(2, '0')
+          const minute = String(minutes).padStart(2, '0')
+          return `${year}-${month}-${day}T${hour}:${minute}:00`
+        }
+
+        const startDateTime = formatDateTime(this.selectedDate, this.startTime)
+        const endDateTime = formatDateTime(this.selectedDate, this.endTime)
+
+        const roomID = parseInt(this.$route.query.roomID || '1')
+
+        // 构建表单数据
+        const formData = new URLSearchParams()
+        formData.append('startTime', startDateTime)
+        formData.append('endTime', endDateTime)
+        formData.append('roomID', roomID.toString())
+        formData.append('attendees', this.attendees.toString())
+
+        console.log('发送请求参数:', Object.fromEntries(formData))
+
+        // 发送预约请求
+        const response = await fetch('https://5229-222-210-192-60.ngrok-free.app/api/meeting-rooms/availability', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json',
+            'ngrok-skip-browser-warning': '1'
+          },
+          credentials: 'include',
+          mode: 'cors',
+          body: formData
+        })
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error('服务器响应:', errorText)
+          throw new Error(`预约失败: ${response.status} - ${errorText}`)
+        }
+
+        const result = await response.json()
+        
+        if (result.status === 200) {
+          this.$message({
+            type: 'success',
+            message: result.msg || '预约成功！可查询你的预约记录'
+          })
+          // 跳转到查询页面
+          this.$router.push('/main/inquiry-meeting-room')
+        } else {
+          throw new Error(result.msg || '预约失败，请稍后重试')
+        }
+      } catch (error) {
+        console.error('预约失败:', error)
+        this.$message.error(error.message || '预约失败，请稍后重试')
+      }
     },
     checkModelViewer() {
       const check = () => {

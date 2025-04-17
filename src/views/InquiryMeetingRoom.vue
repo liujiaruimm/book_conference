@@ -72,13 +72,13 @@ export default {
         if (response.data.status === 1) {
           if (response.data.data && Array.isArray(response.data.data)) {
             this.bookings = response.data.data.map(booking => ({
-              id: booking.rReservationId || '',
+              id: booking.rReservationId || '1',
               roomId: booking.roomId,
               roomName: booking.roomName || '未知会议室',
-              userName: booking.userName || '未知用户',
+              userName: booking.userName || 'admin',
               startTime: this.formatDateTime(booking.startTime),
               endTime: this.formatDateTime(booking.endTime),
-              participants: booking.participants || 0
+              participants: booking.attendees || booking.numberOfAttendees || booking.participants || 0
             }));
           } else {
             this.$message.warning('暂无预约记录');
@@ -114,27 +114,50 @@ export default {
         });
 
         if (confirmed) {
-          const userInfo = localStorage.getItem('userInfo');
-          const response = await this.$http({
-            method: 'delete',
-            url: `/cancelBooking/${booking.id}`,
+          console.log('准备取消的预约ID:', booking.id);
+          
+          const response = await fetch(`https://5229-222-210-192-60.ngrok-free.app/cancel?rReservationId=${booking.id}`, {
+            method: 'DELETE',
             headers: {
-              'Authorization': `Bearer ${JSON.parse(userInfo).token}`,
-              'Content-Type': 'application/json'
-            }
+              'Accept': 'application/json',
+              'ngrok-skip-browser-warning': '1'
+            },
+            credentials: 'include',
+            mode: 'cors'
           });
 
-          if (response.data.status === 1) {
-            this.$message.success('取消预约成功');
+          // 获取响应文本
+          const responseText = await response.text();
+          console.log('服务器响应:', {
+            status: response.status,
+            statusText: response.statusText,
+            body: responseText
+          });
+
+          if (!response.ok) {
+            throw new Error(`取消预约失败: ${response.status} - ${responseText}`);
+          }
+
+          let result;
+          try {
+            result = JSON.parse(responseText);
+          } catch (e) {
+            console.error('解析响应JSON失败:', e);
+            throw new Error('服务器响应格式错误');
+          }
+          
+          if (result.status === 200 || result.status === 1) {
+            this.$message.success(result.msg || '取消预约成功');
+            // 刷新预约列表
             await this.fetchBookings();
           } else {
-            this.$message.error(response.data.msg || '取消预约失败');
+            throw new Error(result.msg || '取消预约失败');
           }
         }
       } catch (error) {
         if (error !== 'cancel') {
           console.error('取消预约失败:', error);
-          this.$message.error('取消预约失败：' + (error.response?.data?.message || '网络错误'));
+          this.$message.error(error.message || '取消预约失败，请稍后重试');
         }
       }
     }
